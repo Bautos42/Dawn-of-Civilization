@@ -1402,22 +1402,6 @@ void CvPlayerAI::AI_conquerCity(CvCity* pCity)
 				iRazeValue -= 30;
 			}
 
-		/*if (getID() == MONGOLIA && iX == 103 && iY == 44)
-		{
-			iRazeValue += 50;
-		}*/
-
-		if (getID() == NATIVE || isBarbarian()) {
-				iRazeValue *= 2;
-				iRazeValue += 30;
-			}
-		else {
-				iRazeValue *= 3;
-				iRazeValue /= 2;
-			}
-
-		//Rhye - end
-
 		if (iRazeValue > 0)
 		{
 			for (iI = 0; iI < GC.getNumTraitInfos(); iI++)
@@ -5091,12 +5075,14 @@ TechTypes CvPlayerAI::AI_bestTech(int iMaxPathLength, bool bIgnoreCost, bool bAs
 								case INDIA:
 									if (iI == MEDITATION || iI == PRIESTHOOD)
 										iValue *= 20;
-									if (iI == WRITING  || iI == MONOTHEISM || iI == MONARCHY || iI == CALENDAR || iI == MATHEMATICS)
+									if (iI == MONOTHEISM)
+										iValue /= 10;
+									if (iI == WRITING  || iI == MONARCHY || iI == CALENDAR)
 										iValue /= 3;
 									if (iI == ENGINEERING || iI == THEOLOGY || iI == CIVIL_SERVICE)
 										iValue /= 2;
 									break;
-								case CARTHAGE:
+								case PHOENICIA:
 									if (iI == COMPASS)
 										iValue *= 2;
 									if (iI == MONOTHEISM)
@@ -5143,10 +5129,10 @@ TechTypes CvPlayerAI::AI_bestTech(int iMaxPathLength, bool bIgnoreCost, bool bAs
 										iValue /= 2;
 									break;
 								case ETHIOPIA:
-									if (iI == MONOTHEISM)
+									/*if (iI == MONOTHEISM)
 										iValue *= 2;
 									if (iI == THEOLOGY)
-										iValue *= 2;
+										iValue *= 2;*/
 									break;
                                 case KOREA:
                                     if (iI == OPTICS)
@@ -6277,17 +6263,14 @@ int CvPlayerAI::AI_getDifferentReligionAttitude(PlayerTypes ePlayer) const
 	}
 
 	//Rhye - start (modified by Leoreth)
-	if (getCurrentEra() == 2) //medieval
+	if (getCurrentEra() == ERA_MEDIEVAL)
+	{
 		iAttitude *= 3;
-	else if (getCurrentEra() == 3) //renaissance
+	}
+	else if (getCurrentEra() == ERA_RENAISSANCE)
 	{
 		iAttitude *= 2;
-		//iAttitude /= 2;
 	}
-	//else if (getCurrentEra() <= 1 || getCurrentEra() == 5) //ancient, classical and modern
-		//iAttitude *= 2;
-	//renaissance and industrial = default
-	//Rhye - end
 
 	return iAttitude;
 }
@@ -10195,7 +10178,7 @@ int CvPlayerAI::AI_neededMissionaries(CvArea* pArea, ReligionTypes eReligion) co
     //internal spread.
     if (bCultureVictory || bState || bHoly)
     {
-        iCount = std::max(iCount, (pArea->getCitiesPerPlayer(getID()) - pArea->countHasReligion(eReligion, getID())));
+		iCount = std::max(iCount, pArea->countCanSpread(eReligion, getID(), true));
         if (iCount > 0)
         {
             if (!bCultureVictory)
@@ -10209,7 +10192,7 @@ int CvPlayerAI::AI_neededMissionaries(CvArea* pArea, ReligionTypes eReligion) co
     //external spread.
     if ((bHoly && bState) || (bHoly && !bHolyState && (getStateReligion() != NO_RELIGION)))
     {
-        iCount += ((pArea->getNumCities() * 2) - (pArea->countHasReligion(eReligion) * 3));
+		iCount += pArea->countCanSpread(eReligion, NO_PLAYER, true) / 2;
         iCount /= 16; //Leoreth: /8 before, waste less time spreading religions
 
         iCount = std::max(0, iCount);
@@ -11075,7 +11058,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 			iValue -= 40;
 		}
 
-		if (getID() == GREECE || getID() == CARTHAGE || getID() == KOREA || getID() == ITALY)
+		if (getID() == GREECE || getID() == PHOENICIA || getID() == KOREA || getID() == ITALY)
 		{
 			iValue += 40;
 		}
@@ -11119,7 +11102,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 			iValue -= 40;
 		}
 
-		if (getID() == GREECE || getID() == CARTHAGE || getID() == KOREA || getID() == ITALY)
+		if (getID() == GREECE || getID() == PHOENICIA || getID() == KOREA || getID() == ITALY)
 		{
 			iValue += 80;
 		}
@@ -11560,8 +11543,7 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 	//Leoreth: Pantheon civic
 	if (eCivic == CIVIC_PANTHEON)
 	{
-		//GC.getGameINLINE().logMsg("Begin AI pantheon civic.");
-		if (GC.getLeaderHeadInfo(GET_PLAYER(getID()).getLeader()).getFavoriteReligion() == -1 && GET_PLAYER(getID()).getCurrentEra() < 2 && getID() != MAYA)
+		if (eBestReligion == NO_RELIGION && GET_PLAYER(getID()).getCurrentEra() < ERA_MEDIEVAL && getID() != MAYA)
 		{
 			iValue += GC.getLeaderHeadInfo(GET_PLAYER(getID()).getLeader()).getWonderConstructRand() * 2;
 		}
@@ -11569,14 +11551,13 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 		{
 			return 0;
 		}
-		//GC.getGameINLINE().logMsg("End AI pantheon civic.");
 	}
 
 	if (GC.getLeaderHeadInfo(getPersonalityType()).getFavoriteCivic() == eCivic)
 	{
 		if (!kCivic.isStateReligion() || iHighestReligionCount > 0)
 		{
-			iValue *= 5;   // Leoreth: was 5/4 before, lowered because of civicMatrix' additional impact
+			iValue *= 5;
 			iValue /= 4;
 			iValue += 6 * getNumCities();
 			iValue += 20;
@@ -11591,30 +11572,31 @@ int CvPlayerAI::AI_civicValue(CivicTypes eCivic) const
 	}*/
 
 	// Leoreth - prefer Pantheon if more than half of their cities has no religion
-	if (eCivic == CIVIC_PANTHEON){  // Pantheon
-		//GC.getGameINLINE().logMsg("Pantheon check entered");
-        if (getID() == EGYPT || getID() == BABYLONIA || getID() == GREECE || getID() == CARTHAGE || getID() == ROME){
+	if (eCivic == CIVIC_PANTHEON)  // Pantheon
+	{
+        if (getID() == EGYPT || getID() == BABYLONIA || getID() == GREECE || getID() == PHOENICIA || getID() == ROME)
+		{
             int iCityCounter = 0;
-            for (int iI = 0; iI < GET_PLAYER((PlayerTypes)getID()).getNumCities(); iI++){
-                for (int iJ = 0; iJ < 8; iJ++){
-					//char cArray[99];
-					//sprintf(cArray, "Checking player %d, city %d, religion %d", getID(), iI, iJ);
-					//GC.getGameINLINE().logMsg(cArray);
+            for (int iI = 0; iI < GET_PLAYER((PlayerTypes)getID()).getNumCities(); iI++)
+			{
+                for (int iJ = 0; iJ < 8; iJ++)
+				{
                     if (GET_PLAYER((PlayerTypes)getID()).getCity(iI))
 					{
 						if (GET_PLAYER((PlayerTypes)getID()).getCity(iI)->isHasReligion((ReligionTypes)iJ))
 						{
 							iCityCounter++;
-							//GC.getGameINLINE().logMsg("Counter increased");
 							break;
 						}
 					}
 				}
             }
-            if (2*iCityCounter >= GET_PLAYER((PlayerTypes)getID()).getNumCities())
+
+            if (2 * iCityCounter >= GET_PLAYER((PlayerTypes)getID()).getNumCities())
+			{
                 iValue /= 2;
+			}
         }
-		//GC.getGameINLINE().logMsg("Pantheon check finished");
 	}
 
 	// Leoreth - prefer Vassalage for medieval Eurocivs
@@ -11696,16 +11678,14 @@ ReligionTypes CvPlayerAI::AI_bestReligion() const
 				iValue /= 3; //Rhye (4)
 			}
 
-			//Rhye - start
-			if (iI == CATHOLICISM || iI == ORTHODOXY || iI == PROTESTANTISM) { //Christianity
-				if (getID() == TURKEY || getID() == ARABIA || getID() == EGYPT || getID() == MALI || getID() == CARTHAGE || getID() == PERSIA)
+			if (iI == CATHOLICISM || iI == ORTHODOXY || iI == PROTESTANTISM)
+			{
+				if (getID() == TURKEY || getID() == ARABIA || getID() == EGYPT || getID() == MALI || getID() == PHOENICIA || getID() == PERSIA)
 				{
-					iValue *= 1;
 					iValue /= 2;
 				}
 			}
-			//Rhye - end
-
+			
 			if (iValue > iBestValue)
 			{
 				iBestValue = iValue;
@@ -19980,7 +19960,9 @@ int CvPlayerAI::AI_slaveTradeVal(CvUnit* pUnit) const
 // Leoreth
 int CvPlayerAI::AI_getPersecutionValue(ReligionTypes eReligion) const
 {
-	if (!isStateReligion()) return 1;
+	if (getStateReligion() == NO_RELIGION) return 1;
+
+	if (getStateReligion() == eReligion) return 0;
 
 	return persecutionValue[getStateReligion()][eReligion] - AI_getReligiousTolerance();
 }

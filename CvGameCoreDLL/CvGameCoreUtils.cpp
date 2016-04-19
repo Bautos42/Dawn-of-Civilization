@@ -2473,6 +2473,7 @@ void getMissionTypeString(CvWString& szString, MissionTypes eMissionType)
 	case MISSION_REFORM_GOVERNMENT: szString = L"MISSION_REFORM_GOVERNMENT"; break;
 	case MISSION_DIPLOMATIC_MISSION: szString = L"MISSION_DIPLOMATIC_MISSION"; break;
 	case MISSION_PERSECUTE: szString = L"MISSION_PERSECUTION"; break;
+	case MISSION_GREAT_MISSION: szString = L"MISSION_GREAT_MISSION"; break;
 
 	case MISSION_DIE_ANIMATION: szString = L"MISSION_DIE_ANIMATION"; break;
 
@@ -2645,9 +2646,37 @@ UnitTypes getUniqueUnit(CivilizationTypes eCivilization, UnitTypes eUnit)
 	return (UnitTypes)GC.getCivilizationInfo(eCivilization).getCivilizationUnits(GC.getUnitInfo(eUnit).getUnitClassType());
 }
 
+bool isPrecursor(ReligionTypes ePrecursor, ReligionTypes eReligion)
+{
+	if (ePrecursor == CONFUCIANISM && eReligion == TAOISM) return true;
+	if (ePrecursor == TAOISM && eReligion == CONFUCIANISM) return true;
+	if (ePrecursor == HINDUISM && eReligion == BUDDHISM) return true;
+	if ((ePrecursor == CATHOLICISM || ePrecursor == ORTHODOXY) && eReligion == ISLAM) return true;
+	if (ePrecursor == JUDAISM && (eReligion == CATHOLICISM || eReligion == ORTHODOXY)) return true;
+
+	return false;
+}
+
 void log(char* format, ...)
 {
 	static char buf[2048];
 	_vsnprintf( buf, 2048-4, format, (char*)(&format+1) );
 	gDLL->logMsg("sdkDbg.log", buf);
+}
+
+void log(CvWString message)
+{
+	gDLL->logMsg("sdkDbg.log", CvString(message));
+}
+
+char* chars(const wchar_t* wchars)
+{
+	char buf[256];
+	std::wcstombs(buf, wchars, 256);
+	return buf;
+}
+
+char* chars(CvWString string)
+{
+	return chars(string.c_str());
 }

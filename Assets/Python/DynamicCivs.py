@@ -589,7 +589,7 @@ def onPalaceMoved(iPlayer):
 			setShort(iPlayer, text(dNameChanges[iPlayer]))
 			setAdjective(iPlayer, text(dAdjectiveChanges[iPlayer]))
 		else:
-			setShort(iPlayer, civShort(iPlayer))
+			setShort(iPlayer, short(iPlayer))
 			setAdjective(iPlayer, civAdjective(iPlayer))
 			
 	#checkName(iPlayer)
@@ -649,9 +649,6 @@ def desc(iPlayer, sTextKey=str("%s1")):
 	return text(sTextKey, (name(iPlayer), adjective(iPlayer)))
 
 def short(iPlayer):
-	return gc.getPlayer(iPlayer).getCivilizationShortDescription(0)
-	
-def civShort(iPlayer):
 	return gc.getCivilizationInfo(gc.getPlayer(iPlayer).getCivilizationType()).getShortDescription(0)
 	
 def civAdjective(iPlayer):
@@ -1227,6 +1224,9 @@ def specificAdjective(iPlayer):
 					return "TXT_KEY_CIV_MONGOLIA_TIMURID"
 					
 				return "TXT_KEY_CIV_MONGOLIA_CHAGATAI"
+				
+		if bMonarchy:
+			return "TXT_KEY_CIV_MONGOLIA_MONGOL"
 				
 	elif iPlayer == iTurkey:
 		if iReligion == iIslam:
@@ -1938,7 +1938,7 @@ def leader(iPlayer):
 		if iEra >= iModern: return iPeron
 	
 	elif iPlayer == iBrazil:
-		if iEra >= iModern: return iGetulio
+		if iEra >= iModern: return iVargas
 		
 	elif iPlayer == iCanada:
 		if iEra >= iModern: return iTrudeau

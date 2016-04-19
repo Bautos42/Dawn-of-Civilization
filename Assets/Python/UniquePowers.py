@@ -373,7 +373,9 @@ class UniquePowers:
 				tPlot = utils.findNearestLandPlot((pTargetCity.getX(), pTargetCity.getY()), iRome)
 				
 				iExtra = 0
-				if utils.getHumanID() != iGreece and utils.getHumanID() != iEnemy: iExtra = 1
+				if utils.getHumanID() != iGreece and utils.getHumanID() != iEnemy: 
+					iExtra = 1
+					if iEnemy == iPersia: iExtra = 2
 				
 				utils.makeUnitAI(con.iGreekHoplite, iGreece, tPlot, UnitAITypes.UNITAI_ATTACK_CITY, 2+iExtra*2)
 				utils.makeUnitAI(con.iCatapult, iGreece, tPlot, UnitAITypes.UNITAI_ATTACK_CITY, 1+iExtra*2)
@@ -407,6 +409,7 @@ class UniquePowers:
 #------------------ARABIAN U.P.-------------------
 
 	def mughalUP(self, city):
+		return
 		pMughals = gc.getPlayer(iMughals)
 		iStateReligion = pMughals.getStateReligion()
 
@@ -414,6 +417,7 @@ class UniquePowers:
 			city.setHasReligion(iStateReligion, True, True, False)
 
 	def seljukUP(self, city):
+		return
 		pSeljuks = gc.getPlayer(iSeljuks)
 		iStateReligion = pSeljuks.getStateReligion()
 

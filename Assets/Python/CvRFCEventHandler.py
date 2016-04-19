@@ -29,6 +29,7 @@ import RegionMap
 import Areas
 import Civilizations
 import AIParameters
+import GreatPeople as gp
 
 gc = CyGlobalContext()
 PyPlayer = PyHelpers.PyPlayer
@@ -188,7 +189,7 @@ class CvRFCEventHandler:
 			
 			city.setName("Konstantinoupolis", False)
 			
-			city.setHasRealBuilding(iProtestantTemple + 4*gc.getPlayer(iPlayer).getStateReligion(), True)
+			city.setHasRealBuilding(iTemple + 4*gc.getPlayer(iPlayer).getStateReligion(), True)
 			
 		if bConquest:
 
@@ -303,12 +304,12 @@ class CvRFCEventHandler:
 			city.setHasRealBuilding(iHarbor, True)
 			city.setHasRealBuilding(iForge, True)
 			
-			city.setHasRealBuilding(iProtestantTemple + 4*gc.getPlayer(iOwner).getStateReligion(), True)
+			city.setHasRealBuilding(iTemple + 4*gc.getPlayer(iOwner).getStateReligion(), True)
 			
 		if iOwner == iNetherlands and (city.getX(), city.getY()) == Areas.getCapital(iNetherlands) and gc.getGame().getGameTurn() <= getTurnForYear(1580)+3:
 			city.setPopulation(9)
 			
-			for iBuilding in [iLibrary, iBarracks, iGrocer, iBank, iAmphitheatre, iTheatre, iProtestantTemple+4*gc.getPlayer(iNetherlands).getStateReligion()]:
+			for iBuilding in [iLibrary, iBarracks, iGrocer, iBank, iAmphitheatre, iTheatre, iTemple+4*gc.getPlayer(iNetherlands).getStateReligion()]:
 				city.setHasRealBuilding(iBuilding, True)
 				
 			gc.getPlayer(iNetherlands).AI_updateFoundValues(False)
@@ -507,14 +508,14 @@ class CvRFCEventHandler:
 			if city.isHasRealBuilding(iAdministrativeCenter): city.setHasRealBuilding(iAdministrativeCenter, False)
 
 		# Leoreth: Apostolic Palace moves holy city
-		if iBuildingType == iApostolicPalace:
-			self.rel.foundOrthodoxy(iOwner)
+		#if iBuildingType == iApostolicPalace:
+		#	self.rel.foundOrthodoxy(iOwner)
 			
 			# Leoreth: build shrine in 3000 BC scenario during HRE autoplay to provide a challenge
-			if utils.getScenario() == i3000BC and utils.getHumanID() == iHolyRome and gc.getGame().getGameTurnYear() < 840:
-				gc.getGame().getHolyCity().setHasRealBuilding(iCatholicShrine, True)
+		#	if utils.getScenario() == i3000BC and utils.getHumanID() == iHolyRome and gc.getGame().getGameTurnYear() < 840:
+		#		gc.getGame().getHolyCity().setHasRealBuilding(iCatholicShrine, True)
 			
-			gc.getGame().setHolyCity(iCatholicism, city, False)
+		#	gc.getGame().setHolyCity(iCatholicism, city, False)
 
 		# Leoreth: update trade routes when Porcelain Tower is built to start its effect
 		if iBuildingType == iPorcelainTower:
@@ -627,34 +628,8 @@ class CvRFCEventHandler:
 	def onGreatPersonBorn(self, argsList):
 		'Great Person Born'
 		pUnit, iPlayer, pCity = argsList
-		player = PyPlayer(iPlayer)
-		iUnitType = pUnit.getUnitType()
-		iUnitClassType = pUnit.getUnitClassType()
-		sName = pUnit.getName()
 		
-		# Leoreth: replace graphics for female GP names
-		if sName[0] == "f":
-			pUnit.setName(sName[1:])
-			pUnit = utils.replace(pUnit, dFemaleGreatPeople[utils.getBaseUnit(iUnitType)])
-		
-		# Leoreth: display notification
-		if iPlayer not in [iIndependent, iIndependent2, iBarbarian]:
-			pDisplayCity = pCity
-			if pDisplayCity.isNone(): pDisplayCity = gc.getMap().findCity(pUnit.getX(), pUnit.getY(), PlayerTypes.NO_PLAYER, TeamTypes.NO_TEAM, False, False, TeamTypes.NO_TEAM, DirectionTypes.NO_DIRECTION, CyCity())
-				
-			sCity = "%s (%s)" % (pDisplayCity.getName(), gc.getPlayer(pDisplayCity.getOwner()).getCivilizationShortDescription(0))
-			sMessage = localText.getText("TXT_KEY_MISC_GP_BORN", (pUnit.getName(), sCity))
-			sUnrevealedMessage = localText.getText("TXT_KEY_MISC_GP_BORN_SOMEWHERE", (pUnit.getName(),))
-			
-			if pCity.isNone(): sMessage = localText.getText("TXT_KEY_MISC_GP_BORN_OUTSIDE", (pUnit.getName(), sCity))
-		
-			for iLoopPlayer in range(iNumPlayers):
-				if gc.getPlayer(iLoopPlayer).isAlive():
-					if pUnit.plot().isRevealed(gc.getPlayer(iLoopPlayer).getTeam(), False):
-						CyInterface().addMessage(iLoopPlayer, False, iDuration, sMessage, "AS2D_UNIT_GREATPEOPLE", InterfaceMessageTypes.MESSAGE_TYPE_MAJOR_EVENT, pUnit.getButton(), ColorTypes(gc.getInfoTypeForString("COLOR_UNIT_TEXT")), pUnit.getX(), pUnit.getY(), True, True)
-					else:
-						CyInterface().addMessage(iLoopPlayer, False, iDuration, sUnrevealedMessage, "AS2D_UNIT_GREATPEOPLE", InterfaceMessageTypes.MESSAGE_TYPE_MAJOR_EVENT, "", ColorTypes(gc.getInfoTypeForString("COLOR_UNIT_TEXT")), -1, -1, False, False)
-
+		gp.onGreatPersonBorn(pUnit, iPlayer, pCity)
 		vic.onGreatPersonBorn(iPlayer, pUnit)
 		sta.onGreatPersonBorn(iPlayer)
 
@@ -663,15 +638,6 @@ class CvRFCEventHandler:
 		iReligion, iOwner, pSpreadCity = argsList
 		
 		cnm.onReligionSpread(iReligion, iOwner, pSpreadCity)
-
-		#Leoreth: if state religion spreads, pagan temples are replaced with its temple. For other religions, they're simply removed.	 
-		if pSpreadCity.isHasBuilding(iPaganTemple):
-			pSpreadCity.setHasRealBuilding(iPaganTemple, False)
-			if gc.getPlayer(iOwner).getCivics(4) != iCivicPantheon and gc.getPlayer(iOwner).getStateReligion() == iReligion and gc.getTeam(iOwner).isHasTech(iPriesthood):
-				pSpreadCity.setHasRealBuilding(iProtestantTemple+4*iReligion, True)
-				CyInterface().addMessage(iOwner, True, iDuration, CyTranslator().getText("TXT_KEY_PAGAN_TEMPLE_REPLACED", (str(gc.getReligionInfo(iReligion).getText()), str(pSpreadCity.getName()), str(gc.getBuildingInfo(iProtestantTemple+4*iReligion).getText()))), "", 0, "", ColorTypes(iWhite), -1, -1, True, True)
-			else:
-				CyInterface().addMessage(iOwner, True, iDuration, CyTranslator().getText("TXT_KEY_PAGAN_TEMPLE_REMOVED", (str(gc.getReligionInfo(iReligion).getText()), str(pSpreadCity.getName()))), "", 0, "", ColorTypes(iWhite), -1, -1, True, True)
 
 	def onFirstContact(self, argsList):
 	    

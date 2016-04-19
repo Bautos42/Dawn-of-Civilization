@@ -1173,7 +1173,7 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_PAGAN_TEMPLE_REPLACED</Tag>
-		<English>The spread of %s1 to our city of %s2 caused its citizens to repurpose their Pagan Temple as %s3.</English>
+		<English>The spread of %s1 to our city of %s2 caused its citizens to repurpose their Pagan Temple as a %s3.</English>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_PANTHEON_REQUIREMENT</Tag>
@@ -1333,7 +1333,7 @@
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_SCHISM_MESSAGE</Tag>
-		<English>The institution of papacy has already existed for several centuries. However, the Pope's claim to be the sole representative of God on Earth is threatening our own theological authority. Many clergymen in our civilization are also worried that his interpretation of the Word of God has strayed too far from the true origins of Christianity. Shall we heed their call to separate from the Catholic Church in a Great Schism and follow Orthodox Christianity instead?</English>
+		<English>While Christianity has since its existence consisted of various sects, our central government could still uphold Christian Orthodoxy. But with worldly control over the Christian world fracturing, the Patriarch of %s1 has declared himself Pope and claims to be the sole representative of God on Earth. Now a theological schism divides Christianity, and several cities outside of our direct control have joined this new Catholic sect.</English>
 	</TEXT>
 	<TEXT>
 		<Tag>TXT_KEY_SCHISM_TITLE</Tag>
@@ -1467,5 +1467,22 @@
 	<TEXT>
 		<Tag>TXT_KEY_VOTE_UN_RELEASE_CIVILIZATION</Tag>
 		<English>Release Civilization</English>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_RELIGION_CANNOT_SPREAD_UNLESS_STATE</Tag>
+		<English>[ICON_BULLET]Missionaries cannot spread in civilizations that have a different state religion</English>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_RELIGION_CANNOT_CONVERT_UNLESS_HOLY_CITY</Tag>
+		<English>[ICON_BULLET]Converting to this religion requires controlling its holy city</English>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_BUILDING_RELIGION_BUILDINGS</Tag>
+		<English>All %F1_RelIcon Buildings</English>
+	</TEXT>
+	<TEXT>
+		<Tag>TXT_KEY_MISC_RELIGION_DISAPPEARANCE</Tag>
+		<English>[COLOR_HIGHLIGHT_TEXT]%s1_RelName[COLOR_REVERT] has disappeared from %s2_CityName.</English>
+		<German>Die Religion [COLOR_HIGHLIGHT_TEXT]%s1_RelName[COLOR_REVERT] ist aus %s2_CityName verschwunden.</German>
 	</TEXT>
 </Civ4GameText>

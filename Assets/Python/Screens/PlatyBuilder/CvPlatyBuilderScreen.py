@@ -1660,11 +1660,19 @@ class CvWorldBuilderScreen:
 ## Platy Reveal Mode End ##
 
 	def showFlipZone(self):
-		CyEngine().clearAreaBorderPlots(AreaBorderLayers.AREA_BORDER_LAYER_REVEALED_PLOTS)
+		utils.removeStabilityOverlay()
 		if self.m_iCurrentPlayer < con.iNumPlayers:
 			sColor = "COLOR_MAGENTA"
-			for tPlot in Areas.getBirthArea(self.m_iCurrentPlayer):
-				CyEngine().fillAreaBorderPlotAlt(tPlot[0], tPlot[1], AreaBorderLayers.AREA_BORDER_LAYER_REVEALED_PLOTS, sColor, 1.0)
+			sColorAI = "COLOR_RED"
+			lHumanPlotList = Areas.getBirthArea(self.m_iCurrentPlayer)
+			for tPlot in lHumanPlotList:
+				CyEngine().fillAreaBorderPlotAlt(tPlot[0], tPlot[1], 1000, sColor, 1.0)
+			
+			# Larger AI flipzone
+			tTL, tBR = Areas.getBirthRectangle(self.m_iCurrentPlayer, True)
+			lAIPlotList = [tPlot for tPlot in utils.getPlotList(tTL, tBR, utils.getOrElse(Areas.dBirthAreaExceptions, self.m_iCurrentPlayer, [])) if tPlot not in lHumanPlotList]
+			for tPlot in lAIPlotList:
+				CyEngine().fillAreaBorderPlotAlt(tPlot[0], tPlot[1], 1001, sColorAI, 1.0)
 
 	def showStabilityOverlay(self):
 		utils.removeStabilityOverlay()
@@ -2195,7 +2203,7 @@ class CvWorldBuilderScreen:
 			self.bSensibility = not self.bSensibility
 			self.setCurrentModeCheckbox()
 
-		if inputClass.getNotifyCode() == NotifyCode.NOTIFY_CLICKED and inputClass.getFunctionName() not in ["CoreButton", "SettlerValueButton", "WarMapButton", "ClearChanges", "Export", "WorldBuilderPlayerChoice", "SwitchReborn", "PresetValue", "BrushWidth", "BrushHeight"]:
+		if inputClass.getNotifyCode() == NotifyCode.NOTIFY_CLICKED and inputClass.getFunctionName() not in ["FlipButton", "CoreButton", "SettlerValueButton", "WarMapButton", "ClearChanges", "Export", "WorldBuilderPlayerChoice", "SwitchReborn", "PresetValue", "BrushWidth", "BrushHeight"]:
 			utils.removeStabilityOverlay()
 		
 		return 1

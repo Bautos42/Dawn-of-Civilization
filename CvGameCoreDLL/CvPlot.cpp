@@ -44,6 +44,8 @@ CvPlot::CvPlot()
 	m_aiWarValue = new int[NUM_MAJOR_PLAYERS];
 	m_aiReligionSpreadFactor = new int[NUM_RELIGIONS];
 
+	m_aiReligionInfluence = new int[NUM_RELIGIONS];
+
 	m_aiCulture = NULL;
 	m_aiFoundValue = NULL;
 	m_aiPlayerCityRadiusCount = NULL;
@@ -92,6 +94,8 @@ CvPlot::~CvPlot()
 	SAFE_DELETE_ARRAY(m_aiSettlerValue);
 	SAFE_DELETE_ARRAY(m_aiWarValue);
 	SAFE_DELETE_ARRAY(m_aiReligionSpreadFactor);
+
+	SAFE_DELETE_ARRAY(m_aiReligionInfluence);
 }
 
 void CvPlot::init(int iX, int iY)
@@ -247,6 +251,7 @@ void CvPlot::reset(int iX, int iY, bool bConstructorCall)
 	for (iI = 0; iI < NUM_RELIGIONS; ++iI)
 	{
 		m_aiReligionSpreadFactor[iI] = -1;
+		m_aiReligionInfluence[iI] = 0;
 	}
 }
 
@@ -4641,7 +4646,7 @@ int CvPlot::getUpgradeTimeLeft(ImprovementTypes eImprovement, PlayerTypes ePlaye
 		iUpgradeLeft *= 110;
 		iUpgradeLeft /= 100;
 		break;
-	case CARTHAGE:
+	case PHOENICIA:
 		iUpgradeLeft *= 110;
 		iUpgradeLeft /= 100;
 		break;
@@ -9859,6 +9864,7 @@ void CvPlot::read(FDataStreamBase* pStream)
 	pStream->Read(NUM_MAJOR_PLAYERS, m_aiSettlerValue);
 	pStream->Read(NUM_MAJOR_PLAYERS, m_aiWarValue);
 	pStream->Read(NUM_RELIGIONS, m_aiReligionSpreadFactor);
+	pStream->Read(NUM_RELIGIONS, m_aiReligionInfluence);
 	pStream->Read(&m_iRegionID);
 
 	// Sanguo Mod Performance, start, added by poyuzhe 08.13.09
@@ -10129,6 +10135,7 @@ void CvPlot::write(FDataStreamBase* pStream)
 	pStream->Write(NUM_MAJOR_PLAYERS, m_aiSettlerValue);
 	pStream->Write(NUM_MAJOR_PLAYERS, m_aiWarValue);
 	pStream->Write(NUM_RELIGIONS, m_aiReligionSpreadFactor);
+	pStream->Write(NUM_RELIGIONS, m_aiReligionInfluence);
 	pStream->Write(m_iRegionID);
 
 	// Sanguo Mod Performance, start, added by poyuzhe 08.13.09
@@ -11251,22 +11258,30 @@ void CvPlot::setWarValue(PlayerTypes ePlayer, int iNewValue)
 int CvPlot::getSpreadFactor(ReligionTypes eReligion) const
 {
 	int iSpreadFactor = m_aiReligionSpreadFactor[eReligion];
-	
-	if (eReligion == CATHOLICISM)
+
+	if (eReligion == JUDAISM)
 	{
-		if (!GC.getGameINLINE().isReligionFounded((ReligionTypes)ORTHODOXY))
+		if (!GC.getGameINLINE().isReligionFounded(ORTHODOXY))
 		{
-			if (iSpreadFactor < m_aiReligionSpreadFactor[ORTHODOXY])
+			return getSpreadFactor(ORTHODOXY);
+		}
+	}
+	
+	if (eReligion == ORTHODOXY)
+	{
+		if (!GC.getGameINLINE().isReligionFounded(CATHOLICISM))
+		{
+			if (iSpreadFactor < getSpreadFactor(CATHOLICISM))
 			{
-				iSpreadFactor = m_aiReligionSpreadFactor[ORTHODOXY];
+				iSpreadFactor = getSpreadFactor(CATHOLICISM);
 			}
 		}
 
-		if (!GC.getGameINLINE().isReligionFounded((ReligionTypes)PROTESTANTISM))
+		if (!GC.getGameINLINE().isReligionFounded(PROTESTANTISM))
 		{
-			if (iSpreadFactor < m_aiReligionSpreadFactor[PROTESTANTISM])
+			if (iSpreadFactor < getSpreadFactor(PROTESTANTISM))
 			{
-				iSpreadFactor = m_aiReligionSpreadFactor[PROTESTANTISM];
+				iSpreadFactor = getSpreadFactor(PROTESTANTISM);
 			}
 		}
 	}
@@ -11337,4 +11352,25 @@ bool CvPlot::canUseSlave(PlayerTypes ePlayer) const
 	default:
 		return false;
 	}
+}
+
+// Leoreth
+int CvPlot::getReligionInfluence(ReligionTypes eReligion) const
+{
+	return m_aiReligionInfluence[eReligion];
+}
+
+void CvPlot::setReligionInfluence(ReligionTypes eReligion, int iNewValue)
+{
+	m_aiReligionInfluence[eReligion] = iNewValue;
+}
+
+void CvPlot::changeReligionInfluence(ReligionTypes eReligion, int iChange)
+{
+	m_aiReligionInfluence[eReligion] += iChange;
+}
+
+bool CvPlot::canSpread(ReligionTypes eReligion) const
+{
+	return getReligionInfluence(eReligion) > 0;
 }
