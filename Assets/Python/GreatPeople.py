@@ -1572,8 +1572,10 @@ iCivGermany : {
 		u"Gebhard Leberecht von Blücher", # 18th
 		iIndustrial,
 		"Carl von Clausewitz", # 19th
+		"Helmuth von Moltke", # 19th
 		"Paul von Hindenburg", # 19th
 		iGlobal,
+		"Erich von Manstein", # 20th
 		"Erwin Rommel", # 20th
 		"Heinz Guderian", # 20th
 	],
